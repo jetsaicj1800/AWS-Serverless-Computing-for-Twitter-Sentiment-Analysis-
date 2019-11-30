@@ -1,0 +1,130 @@
+import json
+import boto3
+from decimal import Decimal
+
+from urllib.request import urlopen
+from contextlib import closing
+
+import os
+
+
+#function to get tickers from environment variable
+def get_tickers():
+    
+    tickers = os.getenv('ticker')
+    
+    tickers = tickers.split()
+    
+    return tickers
+    
+#function to generator consistent timestaps for plotting purposes
+def time_generator(time_stamp):
+    
+    #hashmap for Month to Digit conversion
+    Date = {'Nov': 11, 'Dec': 12}
+    
+    y =time_stamp.split()
+    
+    #format timestamp to  "y-m-d hr:mm:00"
+    time_stamp = y[5] + "-"+ str(Date[y[1]]) + "-" + y[2] +" " + y[3][0:6] + "00"
+    
+    return time_stamp
+
+
+def lambda_handler(event, context):
+    
+    
+    #extract real-time stock price via online API
+    tickers = get_tickers()
+    price = {}
+    for ticker in tickers:
+        
+        url = 'https://financialmodelingprep.com/api/v3/stock/real-time-price/' + ticker
+        
+        with closing(urlopen(url)) as responseData:
+            jsonData = responseData.read()
+            deserialisedData = json.loads(jsonData)
+            price[ticker] = deserialisedData['price']
+    
+    
+    #extract the tweets from event
+    tweets=[d['text'] for d in event]
+    
+    #create the time_stamp
+    time_stamp = time_generator(event[0]['created_at'])
+    
+    
+    client = boto3.client('comprehend')
+    
+    #perform sentiment analysis
+    #maximum batchsize = 25
+    response = client.batch_detect_sentiment(
+                    TextList=tweets,
+                    LanguageCode='en'
+                )
+                
+    
+    #save data to dynamodb
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    table = dynamodb.Table("tweet")
+    
+    count = len(tweets)
+    
+    print(count)
+    
+    
+    #average out the sentimate scores
+    positive =0
+    negative =0
+    neutral =0
+    mixed =0
+    
+    for result in response['ResultList']:
+        positive +=result["SentimentScore"]['Positive']
+    
+        negative += result["SentimentScore"]['Negative']
+        neutral += result["SentimentScore"]['Neutral']
+        mixed += result["SentimentScore"]['Mixed']
+    
+    positive = str(round(positive/count,2))
+    negative = str(round(negative/count,2))
+    neutral = str(round(neutral/count,2))
+    mixed = str(round(mixed/count,2))
+    
+    #write ticker price and sentiment scores to table
+    
+    
+    
+    for ticker in tickers:
+        
+        unique_id = time_stamp + ticker
+    
+        item = { 'id': unique_id, 'time_stamp': time_stamp, 'ticker':ticker,'price': str(price[ticker]), 'positive': positive, 'negative': negative,'neutral': neutral,'mixed': mixed,}
+        print(item)
+        
+        response = table.put_item( Item=item)
+    
+    
+    #write tweets to S3
+    counter = 1
+    tweet_string = ''
+    
+    #generate the text for tweets
+    for item in tweets:
+        
+        tweet_string = tweet_string + "Tweet #" + str(counter) +'\n' + item + '\n\n'
+        counter += 1
+    
+    dstKey = time_stamp + '.txt'
+    dstBucket = 'tweetsave'
+    
+    
+    s3 = boto3.resource('s3')
+    
+    s3.Bucket(dstBucket).put_object(
+        Key=dstKey,
+        Body=tweet_string,
+        ContentType='text/plain',
+        ACL='public-read'
+    )
+    
