@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<h2>Tweets History</h2>
+<body>
+            <form action="{{url_for('main')}}" >
+                <input type='submit' value='Back To the Main Page' />
+            </form>
+
+        {% for result in results %}
+            <table>
+                <a href="{{url_for('view_tweets', filename=result)}}">
+                {{ result }}
+            </table>
+        {% endfor %}
+
+    </table>
+
+
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+
+<h2>Tweets Data</h2>
+<body>
+        <form action="{{url_for('view_search_result')}}" >
+            <input type='submit' value='Back To Previous Page' />
+        </form>
+
+        <p><iframe src="{{ tweet_url }}" frameborder="0" height="800"  width="100%"></iframe></p>
+
+
+
+</body>
+</html>
+{% endblock %}
+

@@ -1,0 +1,161 @@
+ {% extends "base.html" %}
+ {% block content %}
+<h2>Twitter Sentiment Analysis vs Stock Price</h2>
+
+     <form action="{{url_for('main')}}" >
+                <input type='submit' value='Back To the Main Page' />
+     </form> <br>
+
+
+    <table>
+    <body>
+    <tr>
+        <td><div id="stock_plot" style="width:700px;height:700px"></div></td>
+
+        <b><font color="red">ticker</font>  </b>
+
+        <form name=ticker_form action="{{url_for('view_tweet_sentiment')}}">
+
+        <select name=ticker_name size=1 onChange="ticker_form.submit();">
+
+            {% for ticker in tickers %}
+
+            {% if ticker == old_ticker %}
+            <option value={{ticker}} selected>{{ticker}}</option>
+
+            {% else %}
+            <option value={{ticker}}>{{ticker}}</option>
+            {% endif %}
+            {% endfor %}
+
+        </select>
+        </form>
+
+        &emsp;
+
+        <b><font color="red">Period </font>  </b>
+
+        <form name=period_form action="{{url_for('view_tweet_sentiment')}}">
+
+        <select name=period_name size=1 onChange="period_form.submit();">
+
+            {% for period in period_array %}
+
+            {% if period == old_period %}
+            <option value={{period}} selected>{{period}}</option>
+
+            {% else %}
+            <option value={{period}}>{{period}}</option>
+            {% endif %}
+            {% endfor %}
+
+        </select>
+        </form>
+
+        <td><div id="sentiment_plot" style="width:700px;height:700px"></div></td>
+    </tr>
+    </table>
+
+
+    <script>
+
+        stock_points = {
+                  x: {{ time|safe }},
+                  y: {{ stock|safe }},
+                  type: 'scatter'
+                };
+
+        var data = [stock_points];
+
+        var StockName = 'Stock Price for ' + "{{old_ticker}}"
+
+        var layout1 = {
+          title: StockName,
+        };
+
+        Plotly.newPlot('stock_plot', data, layout1);
+
+
+        var neutral = {
+          x: {{ time|safe }},
+          y: {{ neutral|safe }},
+          type: 'bar',
+          text: 'neutral',
+          textposition: 'auto',
+          hoverinfo: 'none',
+          opacity: 0.5,
+          marker: {
+            color: 'rgb(0,0,255)',
+            line: {
+              color: 'rbg(8,48,107)',
+              width: 1.5
+            }
+          },
+          name: 'neutral'
+        };
+
+        var positive = {
+          x: {{ time|safe }},
+          y: {{ positive|safe }},
+          type: 'bar',
+          text: 'positive',
+          textposition: 'auto',
+          hoverinfo: 'none',
+          marker: {
+            color: 'rgb(0,255,0)',
+            line: {
+              color: 'rbg(8,48,107)',
+              width: 1.5
+            }
+          },
+          name: 'positive'
+        };
+
+         var negative = {
+          x: {{ time|safe }},
+          y: {{ negative|safe }},
+          type: 'bar',
+          text: 'negative',
+          textposition: 'auto',
+          hoverinfo: 'none',
+          marker: {
+            color: 'rgb(255,0,0)',
+            line: {
+              color: 'rbg(8,48,107)',
+              width: 1.5
+            }
+          },
+          name: 'negative'
+        };
+
+        var mixed = {
+          x: {{ time|safe }},
+          y: {{ mixed|safe }},
+          type: 'bar',
+          text: 'mixed',
+          textposition: 'auto',
+          hoverinfo: 'none',
+          marker: {
+            color: 'rgb(0,0,0)',
+            line: {
+              color: 'rbg(8,48,107)',
+              width: 1.5
+            }
+          },
+          name: 'mixed'
+        };
+
+        var data2 = [negative,neutral,positive,mixed];
+
+        var layout2 = {
+          title: 'Sentiment Bar Chart',
+          barmode: 'stack'
+        };
+
+        Plotly.newPlot('sentiment_plot', data2, layout2);
+
+
+
+    </script>
+    </body>
+ {% endblock %}

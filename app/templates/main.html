@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+
+<title>Twitter Sentiment Analysis</title>
+</head>
+<html>
+
+<h1>Tweet Sentiment Analysis vs Stock Price</h1>
+
+    <table >
+
+        <td>
+
+        <p style="color:Blue;">
+
+            &ensp;&ensp;Query Status :  <font color="red">{{status}}</font> &ensp;&ensp;
+        </p>
+
+        </td>
+
+        <td>
+            <form action="{{url_for('restart_query')}}" >
+                        <input type='submit' value='Query Start' />
+            </form>
+        </td>
+
+        <td>
+            <form action="{{url_for('stop_query')}}" >
+                        <input type='submit' value='Query Stop' />
+            </form>
+        </td>
+
+
+
+    </table>
+
+    <table >
+
+        <td>
+
+        <p style="color:Blue;">
+
+            &ensp;&ensp;Analysis Result: &ensp;&ensp;
+        </p>
+        </td>
+
+        <td>
+            <form action="{{ url_for('view_search_result')}}">
+                        <input type='submit' value='View Tweets' />
+            </form>
+        </td>
+
+        <td>
+            <form action="{{ url_for('view_tweet_sentiment')}}">
+                        <input type='submit' value='View Sentiment' />
+            </form>
+        </td>
+
+
+
+    </table>
+
+    <body>
+    <table style="float: left;margin:4px">
+    <tr>
+            <td>
+            <table >
+            <table >
+
+            <tr>
+                <td align="right">
+            <form action="{{ url_for('update_query')}}">
+                <font color="blue">Query Update:</font>  <input type="text" name="query" placeholder="trump"/> <input type="submit"/>
+            </form>
+                </td>
+            </tr>
+
+             <tr>
+                 <td align="right">
+            <form action="{{ url_for('add_ticker')}}">
+                <font color="blue">Add Ticker:</font>  <input type="text" name="ticker" placeholder="spy"/> <input type="submit" />
+            </form>
+                </td>
+            </tr>
+
+            <tr>
+                 <td align="right">
+            <form action="{{ url_for('remove_ticker')}}">
+                <font color="blue">Remove Ticker:</font>  <input type="text" name="ticker" placeholder="spy"/> <input type="submit" />
+            </form>
+                </td>
+            </tr>
+
+
+            </table>
+
+            </td>
+
+            <table>
+            <td valign="top">
+            <table border="1">
+
+                <tr>
+                <td>
+                    <b>List of Tickers</b>
+                </td>
+
+                </tr>
+                    {% for ticker in tickers %}
+                <tr>
+                <td align="center">
+                    {{ticker}}
+                </td>
+                </tr>
+                    {% endfor %}
+            </table>
+            </td>
+
+            <td valign="top">
+            <table border="1">
+
+                <tr>
+                <td>
+                    <b>Query Parameter</b>
+                </td>
+                </tr>
+
+                <tr>
+
+                <td align="center">
+                    {{query}}
+                </td>
+                </tr>
+
+            </table>
+            </td>
+            </table>
+
+
+     </tr>
+    </table>
+    <body>
+
+
+{% endblock %}

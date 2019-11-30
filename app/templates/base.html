@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <!-- Plotly.js -->
+        <script type="text/javascript" src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+        <title>{{title}}</title>
+
+    </head>
+    <body>
+        <h1>{{title}}</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>
